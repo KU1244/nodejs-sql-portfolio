@@ -1,41 +1,41 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# --- Node.js / Next.js ---
+node_modules/
+.next/
+out/
+dist/
+build/
 
-# dependencies
-/node_modules
-/.pnp
+# --- Yarn / pnpm ---
+.pnp
 .pnp.*
+.pnpm-debug.log*
 .yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+!.yarn/patches/
+!.yarn/plugins/
+!.yarn/releases/
+!.yarn/versions/
+!.yarnrc.yml
 
-# testing
-/coverage
+# --- 環境変数 ---
+.env
+.env.*
+!.env.example
 
-# next.js
-/.next/
-/out/
+# --- Vercel ---
+.vercel/
 
-# production
-/build
-
-# misc
+# --- IDE / OS ---
+.idea/
+*.iml
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
+# --- ログ / キャッシュ ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
 *.tsbuildinfo
+coverage/
+
+# --- Next.js auto-generated ---
 next-env.d.ts
