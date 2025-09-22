@@ -39,4 +39,7 @@ coverage/
 
 # --- Next.js auto-generated ---
 next-env.d.ts
-/generated/prisma
+
+# --- Prisma ---
+# Prisma Client の生成物は除外する（毎回自動生成されるから）
+/prisma/generated/
