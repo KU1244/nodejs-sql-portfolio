@@ -41,11 +41,63 @@ npm run dev
 http://localhost:3000/api/hello
 http://localhost:3000/api/status
 http://localhost:3000/api/time
-Next Steps (Week 2+)
-Connect to PostgreSQL and implement /api/users
+📌 Week 2 – PostgreSQL + Prisma CRUD
+Implemented Endpoints
+GET /api/users → List all users
 
-Add CRUD operations (Create, Read, Update, Delete)
+POST /api/users → Create a new user { name, email }
 
-Integrate with Stripe for payments
+GET /api/users/:id → Get one user by ID
 
-Explore Firebase for authentication and storage
+PUT /api/users/:id → Update user fields { name?, email? }
+
+DELETE /api/users/:id → Delete a user
+
+Example cURL Requests
+bash
+コードをコピーする
+# Create
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Taro","email":"taro@example.com"}'
+
+# List
+curl http://localhost:3000/api/users
+
+# Get by ID
+curl http://localhost:3000/api/users/1
+
+# Update
+curl -X PUT http://localhost:3000/api/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Taro Yamada"}'
+
+# Delete
+curl -X DELETE http://localhost:3000/api/users/1
+What I Learned
+How to connect Next.js API routes with PostgreSQL via Prisma
+
+How to design RESTful endpoints for Create / Read / Update / Delete
+
+How to validate request bodies (name, email) before writing to DB
+
+How to handle errors consistently (400 Bad Request, 404 Not Found, 500 Internal Error)
+
+How to structure API folders (pages/api/users/index.ts, pages/api/users/[id].ts)
+
+Prisma Schema
+prisma
+コードをコピーする
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+}
+Next Steps (Week 3+)
+Add unit tests (Jest) for CRUD endpoints
+
+Deploy to Vercel with a hosted PostgreSQL (e.g., Supabase / Neon)
+
+Integrate Stripe checkout for payments
+
+Use Firebase for authentication and user sessions
