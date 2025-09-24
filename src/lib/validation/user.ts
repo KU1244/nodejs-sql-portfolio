@@ -1,16 +1,18 @@
 import { z } from "zod";
 
-// Create user
-export const CreateUser = z.object({
-    name: z.string().min(1, "Name is required").max(50, "Name too long"),
-    email: z.string().email("Invalid email format"),
+export const UserCreate = z.object({
+    name: z.string().min(1).max(100),
+    email: z.string().email(),
+    ownerId: z.number().int().positive(),
 });
+export type UserCreate = z.infer<typeof UserCreate>;
 
-// Update user (partial = all optional)
-export const UpdateUser = CreateUser.partial();
+export const UserUpdate = z
+    .object({
+        name: z.string().min(1).max(100).optional(),
+        email: z.string().email().optional(),
+    })
+    .refine((v) => Object.keys(v).length > 0, { message: "No fields to update" });
+export type UserUpdate = z.infer<typeof UserUpdate>;
 
-// List query
-export const ListQuery = z.object({
-    limit: z.coerce.number().min(1).max(100).optional(),
-    offset: z.coerce.number().min(0).optional(),
-});
+export const IdParam = z.object({ id: z.coerce.number().int().positive() });

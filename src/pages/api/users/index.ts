@@ -1,48 +1,47 @@
-// src/pages/api/users/index.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
+import { ok, fail } from "@/lib/result";
+import { withJson } from "@/lib/http";
+import { getAuthUserFromRequest } from "@/lib/auth";
+import { UserCreate } from "@/lib/validation/user";
+import { Prisma } from "@prisma/client";
 
-/**
- * Users Collection Endpoint
- * - GET  /api/users     -> List users
- * - POST /api/users     -> Create a new user
- */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    try {
-        if (req.method === "GET") {
-            // List users (basic fields only for demo)
-            const users = await prisma.user.findMany({
-                orderBy: { id: "asc" },
-                select: { id: true, name: true, email: true },
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const me = getAuthUserFromRequest(req);
+    if (!me) return res.status(403).json(fail("forbidden", "No auth headers"));
+
+    if (req.method === "GET") {
+        // paging & whitelist
+        const limit = Math.min(Number(req.query.limit ?? 20), 100);
+        const users = await prisma.user.findMany({
+            take: limit,
+            orderBy: { id: "asc" },
+            select: { id: true, name: true, email: true, ownerId: true },
+        });
+        return res.status(200).json(ok(users));
+    }
+
+    if (req.method === "POST") {
+        const parsed = UserCreate.safeParse(req.body as unknown);
+        if (!parsed.success) return res.status(400).json(fail("bad_request", "Invalid body", parsed.error.format()));
+
+        const data = parsed.data;
+        // 権限：USER でも作成は可（ownerIdは自分想定でもOK）。必要なら制限。
+        try {
+            const created = await prisma.user.create({
+                data,
+                select: { id: true, name: true, email: true, ownerId: true },
             });
-            return res.status(200).json({ ok: true, data: users });
-        }
-
-        if (req.method === "POST") {
-            // Basic input validation (no zod to keep dependencies minimal)
-            const { name, email } = req.body ?? {};
-            if (typeof name !== "string" || name.trim().length === 0) {
-                return res.status(400).json({ ok: false, error: "Invalid 'name'." });
+            res.setHeader("Location", `/api/users/${created.id}`);
+            return res.status(201).json(ok(created));
+        } catch (e) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+                return res.status(409).json(fail("conflict", "Email already used"));
             }
-            if (typeof email !== "string" || email.trim().length === 0) {
-                return res.status(400).json({ ok: false, error: "Invalid 'email'." });
-            }
-
-            // Create user
-            const user = await prisma.user.create({
-                data: { name: name.trim(), email: email.trim() },
-                select: { id: true, name: true, email: true },
-            });
-
-            return res.status(201).json({ ok: true, data: user });
+            throw e;
         }
-
-        // Method not allowed
-        res.setHeader("Allow", ["GET", "POST"]);
-        return res.status(405).json({ ok: false, error: "Method Not Allowed" });
-    } catch (err: unknown) {
-        // Safe error exposure for portfolio
-        const message = err instanceof Error ? err.message : "Unexpected error";
-        return res.status(500).json({ ok: false, error: message });
     }
 }
+export default withJson(handler, ["GET", "POST"] as const);
+
+export const config = { api: { bodyParser: { sizeLimit: "500kb" } } };
