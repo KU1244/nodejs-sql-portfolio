@@ -1,4 +1,3 @@
-// next.config.ts
 import { NextConfig } from 'next';
 
 /** @type {NextConfig} */
@@ -29,7 +28,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self'; object-src 'none';", // Configures CSP to restrict sources
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'none';", // Updated CSP to allow inline styles and eval
           },
         ],
       },

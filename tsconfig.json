@@ -22,8 +22,9 @@
     "next-env.d.ts",                                  // Include the Next.js environment types
     "**/*.ts",                                        // Include all TypeScript files
     "**/*.tsx",                                       // Include all TypeScript React files
-    "**/*.d.ts",
-    ".next/types/**/*.ts"                             // Include the generated types from Next.js
+    "**/*.d.ts",                                      // Include all TypeScript declaration files
+    ".next/types/**/*.ts",                             // Include the generated types from Next.js
+    "src/**/*"                                         // Include all files in the `src` folder
   ],
   "exclude": ["node_modules"]                         // Exclude node_modules from compilation
 }
