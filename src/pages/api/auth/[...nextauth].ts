@@ -1,6 +1,7 @@
 // src/pages/api/auth/[...nextauth].ts
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google"; // add
 
 export default NextAuth({
     providers: [
@@ -8,10 +9,14 @@ export default NextAuth({
             clientId: process.env.GITHUB_CLIENT_ID!,
             clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         }),
+        GoogleProvider({ //  add
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
     ],
     session: {
         strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60,  //Set the JWT expiration to 30 days
+        maxAge: 30 * 24 * 60 * 60,  // Set JWT expiration to 30 days
         updateAge: 24 * 60 * 60,
     },
     callbacks: {
@@ -26,14 +31,5 @@ export default NextAuth({
             return session;
         },
     },
-    cookies: {
-        sessionToken: {
-            name: "session-token",
-            options: {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "Strict",
-            }
-        }
-    },
+
 });

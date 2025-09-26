@@ -1,27 +1,25 @@
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useRouter } from "next/router";
+// src/pages/dashboard.tsx
+import { useSession, signIn, signOut } from "next-auth/react";
 
-const Dashboard = () => {
-    const { data: session, status } = useSession();  // Type for session is automatically inferred by next-auth
-    const router = useRouter();
+export default function Dashboard() {
+    const { data: session, status } = useSession({
+        required: true,
+        onUnauthenticated() {
+            signIn(undefined, { callbackUrl: "/dashboard" });
+        },
+    });
 
-    useEffect(() => {
-        if (status === "loading") return;  // Do nothing while the session is loading
-        if (!session) {
-            router.push("/login");  // Redirect to login page if the user is not logged in
-        }
-    }, [session, status, router]);
-
-    if (!session) {
-        return null;  // Do not render the page if the user is not logged in
-    }
+    if (status === "loading") return <p>Loading...</p>;
 
     return (
-        <div>
-            <h1>Welcome to your Dashboard</h1>
-        </div>
-    );
-};
+        <main style={{ padding: 24 }}>
+            <h1>Dashboard (protected)</h1>
+            <p>Signed in as {session?.user?.email ?? session?.user?.name ?? "Unknown"}</p>
 
-export default Dashboard;
+            {/*  Added logout button */}
+            <button onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>
+                Sign out
+            </button>
+        </main>
+    );
+}
