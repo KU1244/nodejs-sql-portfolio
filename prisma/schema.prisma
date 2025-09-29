@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  // output は基本デフォルトのままでOK（消しても大丈夫）
+  // Keep default output path (safe to remove if not customized)
 }
 
 datasource db {
@@ -9,8 +9,11 @@ datasource db {
 }
 
 model User {
-  id      Int    @id @default(autoincrement())
-  name    String
-  email   String @unique
-  ownerId Int
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  ownerId      Int
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt @default(now()) // ← default(now()) を追加
 }
