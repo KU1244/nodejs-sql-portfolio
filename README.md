@@ -125,14 +125,40 @@ Logging & error handling (try/catch, request-id)
 
 Test coverage (manual curl smoke tests for 200/201/400/403/409)
 
-📌 Next Steps (Week 3+)
+📌 Week 3 – Authentication (NextAuth + Google Login)
 
-Add unit tests (Vitest + Supertest) for CRUD endpoints
+Implemented Features
 
-Deploy to Vercel with hosted PostgreSQL (Supabase / Neon)
+- Google OAuth login with NextAuth
+- Session management (`/api/auth/session`)
+- Protecting routes (redirect to `/login` if not authenticated)
+- Session token stored in secure httpOnly cookies
 
-Integrate Stripe checkout for payments
+Example Flow
 
-Use Firebase or Auth.js for authentication and sessions
+1. User clicks "Sign in with Google"
+2. NextAuth redirects to Google OAuth
+3. On success, NextAuth creates a session with user info
+4. Client can fetch `/api/auth/session` → { user: { name, email, image } }
 
-Extend CRUD with relations (e.g. Posts, Subscriptions)
+Key Files
+
+- `pages/api/auth/[...nextauth].ts` → NextAuth config
+- `pages/login.tsx` → Google login button
+- `pages/dashboard.tsx` → Protected route (redirects if no session)
+
+What I Learned
+
+- How to integrate Google OAuth using NextAuth
+- How NextAuth handles JWT + cookies automatically
+- How to customize `session` and `jwt` callbacks
+- How to protect API routes and pages with `getServerSession`
+- The difference between **provider login (Google)** and **custom JWT auth**
+
+Why This Matters
+
+Authentication is essential for real apps.  
+By adding Google login, I can:
+- Restrict access to user dashboards
+- Personalize content by logged-in user
+- Prepare for integrating payments (Stripe needs authenticated users)
