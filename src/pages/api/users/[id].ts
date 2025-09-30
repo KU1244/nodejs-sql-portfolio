@@ -7,7 +7,9 @@ import { getAuthUserFromRequest } from "@/lib/auth";
 import { IdParam, UserUpdate } from "@/lib/validation/user";
 import { Prisma } from "@prisma/client";
 
-// Helper: fetch target and check if the caller is owner or admin
+/**
+ * Helper: check if the caller is the owner or an admin of the target record.
+ */
 async function guardOwnerOrAdmin(id: number, me: { id: number; role: string }) {
     const target = await prisma.user.findUnique({
         where: { id },
@@ -20,17 +22,26 @@ async function guardOwnerOrAdmin(id: number, me: { id: number; role: string }) {
     return { kind: "ok" as const };
 }
 
-// Explicit return type for withJson
+/**
+ * Handler for:
+ * - GET    /api/users/[id] : read one
+ * - PATCH  /api/users/[id] : update (owner/admin)
+ * - DELETE /api/users/[id] : delete (owner/admin)
+ */
 const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    // AuthN/Z: header-based demo. Replace with session/JWT in real apps.
+    // Simple demo auth via headers
     const me = getAuthUserFromRequest(req);
-    if (!me) return void res.status(403).json(fail("forbidden", "No auth headers"));
+    if (!me) {
+        res.status(403).json(fail("forbidden", "No auth headers"));
+        return;
+    }
 
-    // Parse id safely
+    // Parse and validate id
     const idParsed = IdParam.safeParse(req.query);
     if (!idParsed.success) {
-        const details = idParsed.error.flatten((i) => i.message); // <- no-deprecated
-        return void res.status(400).json(fail("bad_request", "Invalid id", details));
+        const details = idParsed.error.flatten((i) => i.message);
+        res.status(400).json(fail("bad_request", "Invalid id", details));
+        return;
     }
     const { id } = idParsed.data;
 
@@ -39,21 +50,32 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
             where: { id },
             select: { id: true, name: true, email: true, ownerId: true },
         });
-        if (!user) return void res.status(404).json(fail("not_found", "User not found"));
-        return void res.status(200).json(ok(user));
+        if (!user) {
+            res.status(404).json(fail("not_found", "User not found"));
+            return;
+        }
+        res.status(200).json(ok(user));
+        return;
     }
 
     if (req.method === "PATCH") {
         const parsed = UserUpdate.safeParse(req.body as unknown);
         if (!parsed.success) {
-            const details = parsed.error.flatten((i) => i.message); // <- no-deprecated
-            return void res.status(400).json(fail("bad_request", "Invalid body", details));
+            const details = parsed.error.flatten((i) => i.message);
+            res.status(400).json(fail("bad_request", "Invalid body", details));
+            return;
         }
 
         // Owner/Admin guard
         const g = await guardOwnerOrAdmin(id, me);
-        if (g.kind === "not_found") return void res.status(404).json(fail("not_found", "User not found"));
-        if (g.kind === "forbidden") return void res.status(403).json(fail("forbidden", "Not allowed"));
+        if (g.kind === "not_found") {
+            res.status(404).json(fail("not_found", "User not found"));
+            return;
+        }
+        if (g.kind === "forbidden") {
+            res.status(403).json(fail("forbidden", "Not allowed"));
+            return;
+        }
 
         try {
             const updated = await prisma.user.update({
@@ -61,11 +83,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
                 data: parsed.data,
                 select: { id: true, name: true, email: true, ownerId: true },
             });
-            return void res.status(200).json(ok(updated));
+            res.status(200).json(ok(updated));
+            return;
         } catch (e) {
-            // Map unique email violation -> 409 Conflict
             if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-                return void res.status(409).json(fail("conflict", "Email already used"));
+                res.status(409).json(fail("conflict", "Email already used"));
+                return;
             }
             throw e;
         }
@@ -74,16 +97,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
     if (req.method === "DELETE") {
         // Owner/Admin guard
         const g = await guardOwnerOrAdmin(id, me);
-        if (g.kind === "not_found") return void res.status(404).json(fail("not_found", "User not found"));
-        if (g.kind === "forbidden") return void res.status(403).json(fail("forbidden", "Not allowed"));
+        if (g.kind === "not_found") {
+            res.status(404).json(fail("not_found", "User not found"));
+            return;
+        }
+        if (g.kind === "forbidden") {
+            res.status(403).json(fail("forbidden", "Not allowed"));
+            return;
+        }
 
         await prisma.user.delete({ where: { id } });
-        return void res.status(204).end(); // No Content
+        res.status(204).end(); // No Content
+        return;
     }
 
     res.setHeader("Allow", ["GET", "PATCH", "DELETE"]);
-    return void res.status(405).end();
+    res.status(405).end();
 };
 
-// NOTE: no generic args here (fix TS2558)
+// No generic args here (avoid TS2558)
 export default withJson(handler, ["GET", "PATCH", "DELETE"] as const);
