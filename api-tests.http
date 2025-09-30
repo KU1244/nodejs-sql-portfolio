@@ -1,5 +1,4 @@
-### Create user (ownerId is set on server side)
-# 日本語メモ: ownerIdは送らず、サーバ側でme.idを入れる
+### Create user (success) — ownerId is set on server side
 POST http://localhost:3000/api/users
 x-user-id: 1
 x-user-role: ADMIN
@@ -10,8 +9,39 @@ Content-Type: application/json
   "email": "hanako+{{$timestamp}}@example.com"
 }
 
-### List users (requires auth headers)
+### List users (auth required)
 GET http://localhost:3000/api/users
+x-user-id: 1
+x-user-role: ADMIN
+
+### List users with invalid limit (should still return 200, default 20)
+GET http://localhost:3000/api/users?limit=abc
+x-user-id: 1
+x-user-role: ADMIN
+
+### Get one user (replace {id})
+GET http://localhost:3000/api/users/8
+x-user-id: 1
+x-user-role: ADMIN
+
+### Update user name (owner/admin only)
+PATCH http://localhost:3000/api/users/8
+x-user-id: 1
+x-user-role: ADMIN
+Content-Type: application/json
+
+{ "name": "Hanako Updated" }
+
+### Update user email to a duplicate (should be 409)
+PATCH http://localhost:3000/api/users/8
+x-user-id: 1
+x-user-role: ADMIN
+Content-Type: application/json
+
+{ "email": "hanako@example.com" }
+
+### Delete user (owner/admin only) — expect 204 No Content
+DELETE http://localhost:3000/api/users/8
 x-user-id: 1
 x-user-role: ADMIN
 
@@ -23,10 +53,10 @@ Content-Type: application/json
 
 { "name": "", "email": "bad@example.com" }
 
-### Duplicate email (-> 409)
-POST http://localhost:3000/api/users
+### Missing auth (should be 403)
+GET http://localhost:3000/api/users
+
+### Not found after delete (replace {id} with a deleted id -> 404)
+GET http://localhost:3000/api/users/8
 x-user-id: 1
 x-user-role: ADMIN
-Content-Type: application/json
-
-{ "name": "Hanako", "email": "hanako@example.com" }
