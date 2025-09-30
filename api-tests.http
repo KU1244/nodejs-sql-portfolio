@@ -1,0 +1,32 @@
+### Create user (ownerId is set on server side)
+# 日本語メモ: ownerIdは送らず、サーバ側でme.idを入れる
+POST http://localhost:3000/api/users
+x-user-id: 1
+x-user-role: ADMIN
+Content-Type: application/json
+
+{
+  "name": "Hanako",
+  "email": "hanako+{{$timestamp}}@example.com"
+}
+
+### List users (requires auth headers)
+GET http://localhost:3000/api/users
+x-user-id: 1
+x-user-role: ADMIN
+
+### Invalid input (empty name -> 400)
+POST http://localhost:3000/api/users
+x-user-id: 1
+x-user-role: ADMIN
+Content-Type: application/json
+
+{ "name": "", "email": "bad@example.com" }
+
+### Duplicate email (-> 409)
+POST http://localhost:3000/api/users
+x-user-id: 1
+x-user-role: ADMIN
+Content-Type: application/json
+
+{ "name": "Hanako", "email": "hanako@example.com" }
