@@ -1,19 +1,27 @@
+// prisma/schema.prisma
+
 generator client {
-  provider = "prisma-client-js"
-  // Keep default output path (safe to remove if not customized)
+  provider = "prisma-client-js" // Generate Prisma Client for TypeScript/JavaScript
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"       // Using PostgreSQL as the database
+  url      = env("DATABASE_URL") // Connection string loaded from .env
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String?
-  email        String   @unique
-  ownerId      Int?
-  passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt @default(now()) // ← default(now()) を追加
+  id           Int      @id @default(autoincrement()) // Primary key, auto increment
+  name         String?                                 // Optional user name
+  email        String   @unique                        // Unique email address
+  ownerId      Int?                                    // Optional reference to owner (multi-tenant apps etc.)
+  passwordHash String?                                 // Hashed password (using bcrypt)
+  role         Role     @default(USER)                 // User role (USER by default, can be ADMIN)
+  createdAt    DateTime @default(now())                // Creation timestamp
+  updatedAt    DateTime @updatedAt                     // Last updated timestamp
+}
+
+// Enum for user roles
+enum Role {
+  USER   // Standard user
+  ADMIN  // Administrator
 }
