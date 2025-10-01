@@ -9,17 +9,29 @@ export default function Dashboard() {
         },
     });
 
-    if (status === "loading") return <p>Loading...</p>;
+    if (status === "loading") return <p className="text-center mt-10">Loading...</p>;
 
     return (
-        <main style={{ padding: 24 }}>
-            <h1>Dashboard (protected)</h1>
-            <p>Signed in as {session?.user?.email ?? session?.user?.name ?? "Unknown"}</p>
+        <main className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+            <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
+                <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+                    Dashboard <span className="text-sm text-gray-500">(protected)</span>
+                </h1>
 
-            {/*  Added logout button */}
-            <button onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>
-                Sign out
-            </button>
+                <p className="text-gray-700 text-center mb-6">
+                    Signed in as{" "}
+                    <span className="font-medium text-blue-600">
+                        {session?.user?.email ?? session?.user?.name ?? "Unknown"}
+                    </span>
+                </p>
+
+                <button
+                    onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition"
+                >
+                    Sign out
+                </button>
+            </div>
         </main>
     );
 }
