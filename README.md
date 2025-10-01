@@ -1,43 +1,37 @@
-なるほど、ポートフォリオ用の README に「Week 3」までまとめたいのですね。
-すでに Week1 と Week2 を書かれているので、同じ調子で **英語版** を作ります。
-（説明は日本語でしますが、実際の README は英語で書きます）
-
----
-
-# ✍️ README (追加後イメージ)
-
-````md
 # nodejs-sql-portfolio
 
-Learning Node.js + SQL with Next.js, Stripe, and Firebase.  
+Learning Node.js + SQL with Next.js, Stripe, and Firebase.
 This repository is part of my personal portfolio and learning roadmap.
 
 ---
 
 ## 📌 Week 1 – API Basics
-Implemented Endpoints
 
-- `/api/hello` → Returns a fixed JSON `{ name: "John Doe" }`
-- `/api/status` → Returns server status and uptime
-- `/api/time` → Returns the current time (ISO + JST)
+### Implemented Endpoints
 
-**Response Format**
-```json
+* `/api/hello` → Returns a fixed JSON `{ name: "John Doe" }`
+* `/api/status` → Returns server status and uptime
+* `/api/time` → Returns the current time (ISO + JST)
+
+### Response Format
+
+
+
 // success
-{ "ok": true, "data": { ... } }
+{ "ok": true, "data": { } }
 
 // error
 { "ok": false, "error": { "code": "...", "message": "..." } }
-````
 
-**What I Learned**
+
+### What I Learned
 
 * How to create API routes in Next.js (`pages/api`)
 * How to return JSON with proper status codes (200 / 400 / 500)
 * How to use environment variables safely with `.env`
 * How to handle basic error responses and debugging
 
-**How to Run**
+### How to Run
 
 ```bash
 # install dependencies
@@ -56,7 +50,7 @@ http://localhost:3000/api/time
 
 ## 📌 Week 2 – PostgreSQL + Prisma CRUD
 
-Implemented Endpoints
+### Implemented Endpoints
 
 * `GET /api/users` → List all users (with paging, limit=100 max)
 * `POST /api/users` → Create a new user `{ name, email, ownerId }`
@@ -64,7 +58,7 @@ Implemented Endpoints
 * `PATCH /api/users/:id` → Update user fields `{ name?, email? }`
 * `DELETE /api/users/:id` → Delete a user
 
-**Example cURL Requests**
+### Example cURL Requests
 
 ```bash
 # Create (ADMIN with x-user-id header)
@@ -74,9 +68,7 @@ curl -X POST http://localhost:3000/api/users \
 -d '{"name":"Taro","email":"taro@example.com","ownerId":1}'
 ```
 
-(…省略: list/get/update/delete 同様に実装)
-
-**What I Learned**
+### What I Learned
 
 * How to connect Next.js API routes with PostgreSQL via Prisma
 * How to design RESTful CRUD endpoints with proper RBAC (admin vs user)
@@ -90,7 +82,7 @@ curl -X POST http://localhost:3000/api/users \
     * `lib/http.ts` → withJson, error handling
     * `lib/auth.ts` → parse `x-user-id/x-user-role` headers
 
-**Prisma Schema**
+### Prisma Schema
 
 ```prisma
 model User {
@@ -101,7 +93,8 @@ model User {
 }
 ```
 
-**Why This Matters**
+### Why This Matters
+
 This CRUD demonstrates 7 pillars of practical API development:
 
 * Validation
@@ -116,7 +109,7 @@ This CRUD demonstrates 7 pillars of practical API development:
 
 ## 📌 Week 3 – Authentication (NextAuth)
 
-Implemented Features
+### Implemented Features
 
 * GitHub OAuth login with NextAuth
 * Google OAuth login with NextAuth
@@ -125,7 +118,7 @@ Implemented Features
 * Protected routes (redirect to `/login` if not authenticated)
 * Logout function with `signOut()`
 
-**Example Flows**
+### Example Flows
 
 1. **GitHub/Google Login**
 
@@ -144,14 +137,14 @@ Implemented Features
     * `/dashboard` only accessible when authenticated
     * Logout clears the session and redirects to `/login`
 
-**Key Files**
+### Key Files
 
 * `pages/api/auth/[...nextauth].ts` → NextAuth configuration (providers: GitHub, Google, Credentials)
 * `pages/api/auth/register.ts` → User registration API
 * `pages/login.tsx` → Login UI (forms + provider buttons)
 * `pages/dashboard.tsx` → Protected route (requires `useSession()`)
 
-**What I Learned**
+### What I Learned
 
 * How to integrate GitHub/Google OAuth with NextAuth
 * How to implement secure Email/Password login (bcrypt hashing)
@@ -159,9 +152,9 @@ Implemented Features
 * How to protect pages and API routes with `getServerSession`
 * How to implement logout securely with `signOut()`
 
-**Why This Matters**
-Authentication is a must-have for real-world SaaS.
-With NextAuth + Prisma:
+### Why This Matters
+
+Authentication is a must-have for real-world SaaS. With NextAuth + Prisma:
 
 * Users can choose login methods (OAuth or Email/Password)
 * Sensitive data stays protected (hashed passwords, secure cookies)
@@ -170,25 +163,59 @@ With NextAuth + Prisma:
 
 ---
 
+## 📌 Week 4 – Supabase (Cloud Database Migration)
+
+### Implemented Features
+
+* Migrated database from local PostgreSQL to Supabase (cloud-hosted PostgreSQL)
+* Updated `.env` to use `DATABASE_URL` provided by Supabase
+* Prisma schema synced with Supabase via `npx prisma db push`
+* Verified data consistency with Prisma Studio and Supabase Table Editor
+
+### Example `.env`
+
+```env
+# Local development (if needed)
+# DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
+
+# Supabase (shared cloud database)
+DATABASE_URL="postgresql://postgres:<PASSWORD>@<PROJECT>.supabase.co:5432/postgres"
 ```
 
+### What I Learned
+
+* How to set up a Supabase project and get the connection string
+* How to handle password resets and safe storage with Bitwarden/Signal
+* How Prisma connects seamlessly to cloud-hosted DBs
+* Difference between local dev DB and cloud DB
+* How cloud DB enables seamless switching between desktop and laptop
+
+### Why This Matters
+
+* No more manual USB copying of SQLite/Postgres files
+* Cloud DB makes development from multiple devices (desktop + laptop) smooth
+* Supabase adds real-time features, auth, and storage for future scaling
+
 ---
 
-💡 説明（日本語）  
-- Week3 の内容を **Week1, Week2 と同じフォーマット**で整理しました。  
-- GitHub/Google/Email-Password ログイン、セッション管理、ログアウトまで含めています。  
-- 「Example Flows」を入れて、Upwork クライアントが「どう動くか」をイメージしやすいようにしました。  
+## 🚀 Tech Stack
+
+* Next.js (App Router + API Routes)
+* React + TypeScript
+* TailwindCSS
+* Prisma ORM
+* PostgreSQL (Supabase cloud)
+* NextAuth (GitHub, Google, Email/Password)
+* Stripe (planned integration)
+* Firebase (auth + storage, experimental)
 
 ---
 
-👉 この README をさらに強化するなら、  
-- **スクリーンショット**（login画面、dashboard画面、Prisma Studioなど）  
-- **Tech Stack セクション**（Next.js, Prisma, PostgreSQL, NextAuth, Tailwind, etc.）  
+## 📝 Notes (Japanese Memo)
 
-を加えると、ポートフォリオとしてさらに目立ちます。  
+* Week1: API 基礎 (JSONレスポンス, ステータスコード, .env, エラー処理)
+* Week2: PostgreSQL + Prisma CRUD (RBAC, バリデーション, Prismaエラー処理)
+* Week3: NextAuth 認証 (OAuth, メール/パスワード, セッション管理)
+* Week4: Supabase クラウド化 (ローカル→クラウド移行, 複数PCでの開発効率化)
 
 ---
-
-質問ですが、README は **GitHub 公開用に「営業」目的**で整えますか？  
-それとも **自分の学習ログ専用**としてまとめたいですか？
-```
