@@ -6,14 +6,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
  * NOTE: For production, replace this with Redis or another shared store.
  */
 
-// Keep store across hot-reloads (Next.js dev)
 type HitStore = Map<string, number[]>;
-declare global {
-    // eslint-disable-next-line no-var
-    var __rateLimitStore: HitStore | undefined;
-}
-const store: HitStore = global.__rateLimitStore ?? new Map();
-if (!global.__rateLimitStore) global.__rateLimitStore = store;
+
+// Typed global store without `any`/`var`
+const g = globalThis as typeof globalThis & { __rateLimitStore?: HitStore };
+const store: HitStore = g.__rateLimitStore ?? new Map<string, number[]>();
+if (!g.__rateLimitStore) g.__rateLimitStore = store;
 
 export type RateLimitOptions = {
     /** Max requests allowed within the window */
@@ -31,11 +29,16 @@ export type RateLimitResult = {
 };
 
 /** Extract a best-effort client IP from headers/socket */
+// src/lib/rateLimit.ts
+
+/** Extract a best-effort client IP from headers/socket */
 export function getClientIp(req: NextApiRequest): string {
-    const xf = (req.headers["x-forwarded-for"] as string) || "";
-    const ip = xf.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
-    return ip;
+    const xf = req.headers["x-forwarded-for"];                 // string | string[] | undefined
+    const forwarded = (Array.isArray(xf) ? xf[0] : xf) ?? "";  // ← ここで必ず string にする
+    const first = forwarded.split(",")[0]?.trim() ?? "";       // ← typeof チェック不要
+    return first || req.socket?.remoteAddress || "unknown";
 }
+
 
 /**
  * Check and record a hit for the given IP/key.
@@ -45,8 +48,7 @@ export function rateLimitOk(
     req: NextApiRequest,
     { limit, windowMs, key }: RateLimitOptions
 ): RateLimitResult {
-    const ip = getClientIp(req);
-    const bucketKey = `${ip}:${key ?? req.url ?? ""}`;
+    const bucketKey = `${getClientIp(req)}:${key ?? req.url ?? ""}`;
     const now = Date.now();
 
     const hits = store.get(bucketKey)?.filter((ts) => now - ts < windowMs) ?? [];
