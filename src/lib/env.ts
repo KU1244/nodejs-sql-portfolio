@@ -1,5 +1,4 @@
 // src/lib/env.ts
-
 // Centralized helpers for environment variables (no Stripe client here).
 
 type AppEnv = "development" | "production" | "preview";
@@ -29,14 +28,14 @@ if (!isLive && !serverKey.startsWith("sk_test_")) {
 }
 
 // Publishable (client) key. This may be undefined in server-only contexts.
-export const publishableKey = isLive
+const publishableKey = isLive
     ? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE
     : process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST;
 
-// Export a single object so other files can import { ENV }
+// Export as a single object
 export const ENV = {
     APP_ENV,
     isLive,
     STRIPE_SECRET_KEY: serverKey as string, // already validated above
-    PUBLISHABLE_KEY: publishableKey,        // optional
+    PUBLISHABLE_KEY: publishableKey ?? null,
 };
